@@ -30,47 +30,53 @@ Adapter их берёт автоматически (см. `bybit-adapter/.env`, 
 
 ---
 
-## 1. Запуск адаптера
+## 1+2. Запуск adapter + Astras одной командой
 
 ```powershell
-cd C:\BUFFER\mm-bot\bybit-adapter
-npm run dev
+cd C:\BUFFER\mm-bot
+.\scripts\dev.ps1
 ```
 
-Ожидаемый вывод (последние 4 строки):
+Скрипт:
+- освобождает порты 3000 и 4200 (убивает старые `ng serve` / `npm run dev` если зависли);
+- спавнит **bybit-adapter** в отдельном окне PowerShell с заголовком `bybit-adapter (port 3000)`;
+- ждёт пока adapter ответит на `/health` (≈1-3 секунды);
+- спавнит **Astras dev server** в отдельном окне с заголовком `astras-bybit-ui (port 4200)`.
+
+Astras собирается ~35 секунд. Когда в его окне появится:
 ```
-INFO: Bybit REST client initialised  env=demo
-INFO: bybit-adapter listening  addr=http://127.0.0.1:3000
-  REST: http://127.0.0.1:3000
-  WS (data feed): ws://127.0.0.1:3000/ws
-  WS (commands):  ws://127.0.0.1:3000/cws
+  ➜  Local:   http://localhost:4200/
+```
+— открой эту ссылку в **Chrome** (другие браузеры могут иметь quirks).
+
+**Остановить:** закрой оба новых окна, либо запусти `dev.ps1` ещё раз — он сам убьёт старые процессы перед запуском новых.
+
+**Если PowerShell блокирует скрипт** ("running scripts is disabled on this system"), один раз выполни:
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-Окно с adapter оставить открытым — туда будут идти логи всех запросов от Astras.
-
-**Быстрая проверка адаптера** (в отдельном окне PowerShell):
+**Быстрая проверка adapter** (в третьем окне PowerShell):
 ```powershell
 curl http://127.0.0.1:3000/health
 curl http://127.0.0.1:3000/md/v2/Securities/BYBIT/BTCUSDT
 ```
 
-Первый ответит `{"ok":true,...}`. Второй — JSON с описанием BTCUSDT (live данные с Bybit).
+Первый отдаст `{"ok":true,...}`. Второй — JSON с описанием BTCUSDT (live данные с Bybit Demo).
 
----
+### Альтернативный запуск (вручную, если скрипт не подходит)
 
-## 2. Запуск Astras
-
-В новом окне PowerShell:
+В двух разных окнах PowerShell:
 ```powershell
+# Окно 1
+cd C:\BUFFER\mm-bot\bybit-adapter
+npm run dev
+```
+```powershell
+# Окно 2
 cd C:\BUFFER\mm-bot\astras-bybit-ui
 pnpm start
 ```
-
-Сборка занимает 1-3 минуты при первом запуске. Когда увидишь:
-```
-Local:   http://localhost:4200/
-```
-— открой эту ссылку в **Chrome** (другие браузеры не тестировал в этом спринте, могут быть quirks).
 
 ---
 
