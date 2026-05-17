@@ -3,6 +3,28 @@
 **Дата:** 2026-05-17 (обновлено после уточнения требований)
 **Уточнённые жёсткие фильтры:** только desktop GUI приложения (native binary / Electron / Tauri / Qt / WPF / Avalonia), только OSI-approved лицензии без оговорок, активные коммиты после 2025-11, нативная или CCXT-поддержка Bybit, без trial/freemium/paid pro tiers, не TUI/CLI, не web/SaaS.
 
+## 🟢 СТАТУС: РЕШЕНИЕ ПРИНЯТО (2026-05-17)
+
+После рассмотрения всех вариантов из этого отчёта **архитектор принял принудительное решение**:
+
+> **Использовать форк [alor-broker/Astras-Trading-UI](https://github.com/alor-broker/Astras-Trading-UI) (Apache-2.0, Angular 21) с адаптацией под Bybit + desktop wrap через Tauri 2.0.**
+
+**Это пятый вариант**, который не входил в Tier 1/2/3 этого research, потому что Astras-Trading-UI это **web-приложение, а не desktop**. Решение принимает на себя дополнительный объём работы по миграции (с ALOR API на Bybit) и desktop wrap.
+
+Детальный план миграции: [astras_bybit_migration_plan.md](./astras_bybit_migration_plan.md).
+
+Этот research-документ остаётся **как контекст принятия решения** — показывает что других реалистичных OSS desktop options нет, поэтому путь "форк + адаптация" обоснован.
+
+---
+
+## Что осталось важным после принятия решения
+
+- **flowsurface** остаётся как **read-only вспомогательный инструмент** для orderflow visualization, **параллельно** с нашим форком Astras. Это zero-effort 10-минутный install.
+- **StockSharp Terminal** остаётся как **fallback** если Astras миграция упрётся в неразрешимый блокер в Sprint 1.
+- **DIY с нуля** более не рассматривается — Astras даёт нам ~70% работы готовой.
+
+---
+
 ## Контекст и почему второй research
 
 Первая итерация research предлагала **composite UI** (Bybit web + TradingView free + flowsurface). Это было отклонено: пользователь **жёстко требует desktop OSS приложение**, не web-сервисы и не браузерные UI. Bybit web и TradingView — не подходят (это сервисы в браузере, а не OSS desktop).
