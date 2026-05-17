@@ -173,14 +173,14 @@ grep -i "websocket connection closed" mm-bot/logs/sprint3_stability_run.log
 
 5. **Mobile dashboard** не переключен на scalper-order-book — оставлен обычный order-book с `useOrderWidget: true`. Mobile UX отдельная история (Sprint 5+?), сейчас не трогал чтобы не сломать ничего.
 
-## Commit hashes (для финального push)
+## Commit hashes
 
 - `bybit-adapter@2f9d244` — Epic A backend (stateful merge + throttle + REST seed + vitest spec)
 - `bybit-adapter@a97f2d5` — Epic B (equity recorder timestamp fix)
 - `bybit-adapter@e1f9733` — Epic C (blotter endpoints)
-- `bybit-adapter@<TBD>` — Epic E (README update)
+- `bybit-adapter@f8e019d` — Epic E (README refresh)
 - `astras-bybit-ui@3653a4a8` — Epic A frontend (scalper-order-book + OnPush + trackBy)
-- `astras-bybit-ui@<TBD>` — Epic E (README + eslint cleanup)
-- `mm-bot@<TBD>` — sprint_3 prompts + reports + README
+- `astras-bybit-ui@18f7c7a0` — Epic E (README + eslint cleanup)
+- `mm-bot@c9f08fa` — sprint_3 prompts + reports + README
 
-Хеши будут заполнены после финальных commits и push.
+URLs последних коммитов после push публикуются архитектору вместе с этим отчётом.
