@@ -1,0 +1,143 @@
+# ============================================
+# CRITICAL: never commit sensitive data
+# ============================================
+
+# All .env files
+.env
+.env.*
+*.env
+
+# Hummingbot encrypted credentials and configs with keys
+**/conf/
+**/conf_*/
+**/credentials/
+*.yml-encrypted
+*.key
+*.pem
+*.cer
+
+# API keys in any files
+*api_key*
+*api_secret*
+*credentials*
+
+# ============================================
+# Logs and temp files
+# ============================================
+
+logs/
+*.log
+*.log.*
+*.tmp
+*.bak
+*.backup
+
+# ============================================
+# System files
+# ============================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+
+# ============================================
+# IDE and editors
+# ============================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+.pydevproject
+
+# ============================================
+# Python
+# ============================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual envs
+venv/
+env/
+ENV/
+.venv/
+
+# ============================================
+# Databases and backtest data
+# ============================================
+
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Large data files
+data/
+backtest_data/
+historical_data/
+*.csv.gz
+*.parquet
+
+# ============================================
+# Node.js
+# ============================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ============================================
+# Quantower
+# ============================================
+
+# Quantower workspace settings (may contain keys)
+QuantowerWorkspace/
+
+# ============================================
+# Private notes and temp files
+# ============================================
+
+NOTES_PRIVATE.md
+TODO_PRIVATE.md
+notes/
+private/
