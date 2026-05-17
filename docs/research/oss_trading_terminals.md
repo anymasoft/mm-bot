@@ -1,217 +1,251 @@
-# Open-source альтернативы Quantower для проекта mm-bot
+# Open-source DESKTOP торговые терминалы для Bybit — финальный отчёт
 
-**Дата:** 2026-05-17
-**Триггер:** Quantower оказался не open source (7-дневный trial, Crypto Package — BUY, доступа к исходникам нет). Пользователь требует пивот на 100% OSS-стек, **до начала реальной торговой работы**.
+**Дата:** 2026-05-17 (обновлено после уточнения требований)
+**Уточнённые жёсткие фильтры:** только desktop GUI приложения (native binary / Electron / Tauri / Qt / WPF / Avalonia), только OSI-approved лицензии без оговорок, активные коммиты после 2025-11, нативная или CCXT-поддержка Bybit, без trial/freemium/paid pro tiers, не TUI/CLI, не web/SaaS.
 
-## Контекст
+## Контекст и почему второй research
 
-Изначально Sprint 0 предполагал связку **Hummingbot 2.x + Quantower** (Quantower как professional desktop terminal для визуализации). Hummingbot уже установлен и подключён к Bybit testnet (балансы видны: 0.0085 BTC ≈ $661 + 608.65 USDT). Перед установкой Quantower обнаружено:
+Первая итерация research предлагала **composite UI** (Bybit web + TradingView free + flowsurface). Это было отклонено: пользователь **жёстко требует desktop OSS приложение**, не web-сервисы и не браузерные UI. Bybit web и TradingView — не подходят (это сервисы в браузере, а не OSS desktop).
 
-- **Quantower не open source**. Free 7-day trial, после — платные пакеты (Crypto Package, Multi-asset, Advanced Features и т.п. = BUY). Скриншот в чате архитектора подтверждает.
-- Это критично, потому что:
-  1. Невозможно аудитировать что Quantower делает с API ключами
-  2. После trial — либо платить, либо терять функционал
-  3. Невозможно кастомизировать или интегрировать на уровне исходников
-  4. Поставить на mainnet с реальными деньгами без аудита — риск
+Этот документ заменяет предыдущую версию.
 
-Пользователь упоминает **ASTRAS от ALOR** как референс качества UI (российский desktop terminal, бесплатный для клиентов ALOR, не open source). Это используется как **планка качества**, а не как кандидат (ALOR не работает с Bybit).
+## TL;DR
 
-## Жёсткие требования
+**По совокупности "near-Quantower/ASTRAS уровень + OSS desktop + Bybit + активный" реальный кандидат один — flowsurface.** Второй с натяжкой — StockSharp Terminal. Всё остальное либо web, либо заброшено, либо не про крипту, либо с подвохом лицензии. Это **объективная реальность рынка**, не пробел в поиске.
 
-1. Исходный код на GitHub, OSI-approved лицензия (MIT, Apache, GPL, AGPL)
-2. Активная разработка (коммит за последние 6 месяцев)
-3. Поддержка Bybit (нативно или через CCXT)
-4. Real-time графики
+## Tier 1 — реально подходят
 
-## Желательные требования
+### 1. flowsurface (единственный полноценный кандидат)
 
-5. Богатая графика (candlesticks, indicators, timeframes, drawing tools)
-6. DOM/Order Book визуализация (как в Bookmap/ASTRAS)
-7. Manual order placement
-8. Position/balance/PnL display
-9. UI на уровне платных терминалов
+| Параметр | Значение |
+|---|---|
+| Репо | https://github.com/flowsurface-rs/flowsurface (мигрировал из `akenshaw/flowsurface`) |
+| Лицензия | **GPL-3.0** — чистый OSI, без Commons Clause |
+| Stars | ~1.5k |
+| Последний коммит | 17 мая 2026 (релиз v0.8.8 — 24 апреля 2026), регулярные коммиты весной 2026 |
+| GUI framework | Rust + `iced` (нативный desktop, **не Electron, не WebView**) |
+| Бинарники | Windows, macOS, Linux в Releases |
+| Биржи | **Bybit (native)**, Binance, OKX, Hyperliquid, MEXC |
+| API keys | Нужны только для расширения до trading; для маркет-даты — public WS/REST |
 
-## Результаты research (проверено 2026-05)
+**Функционал (что реально есть):**
+- **Heatmap (Historical DOM)** — Bookmap-style, основная фича. Time-series heatmap из live trades + L2 orderbook с настраиваемой группировкой цен, разными time aggregations, fixed/visible range volume profiles
+- **Footprint charts** — price-grouped + interval-aggregated с кластеризацией трейдов, imbalance, naked-POC
+- **DOM / Ladder** — current L2 orderbook + recent trade volumes на price levels
+- **Candlestick chart** — multi-timeframe
+- **Time & Sales**
+- **Multi-window, persistent layouts**
+- **Темы** — тёмная/светлая, кастомизация
+- **Audio cues** по трейдам (как у Bookmap)
 
-| Проект | Stars | Последний релиз | Лицензия | Bybit | DOM | Charts | Manual orders | UI |
-|---|---|---|---|---|---|---|---|---|
-| **flowsurface** | 1.5k | v0.8.8 (04-2026) | GPL-3.0 | ✅ нативно | ✅ Heatmap + ladder | ✅ Candles, footprint | ❌ read-only | Desktop, Win/Mac/Linux |
-| **Profitmaker** | 352 | активен | MIT + Commons Clause | ✅ через CCXT | ✅ widget | ✅ 13 TF | ✅ market/limit/stop/TP/iceberg | Web (React/shadcn) |
-| **Freqtrade + FreqUI** | 50k+ / 987 | 2026.4 / 2.2.5 (04-05 2026) | GPL-3.0 | ✅ spot+futures | ❌ | ✅ candles+indicators | через REST | Web (Vue) |
-| **Hummingbot Condor** | 95 | активен | MIT | ✅ через HB | ❌ | Portfolio chart | ✅ CEX module | Telegram + web |
-| **OctoBot** | 5.9k | v2.1.1 (03-2026) | GPL-3.0+ | ⚠️ временно отключён | базовый | ✅ | ✅ | Web + mobile |
-| **NautilusTrader** | 22.7k | активен | LGPL-3.0 | ✅ stable | ❌ нет GUI | Jupyter only | API only | — |
-| **Superalgos** | 5.5k | v1.6.1 (11-2024) | Apache-2.0 | ❓ не подтверждено | ❌ | Visual designer | ✅ | Web, тяжёлый |
-| **Hummingbot Dashboard** | 348 | v2.1.0 (10-2024) | Apache-2.0 | через HB | ❌ | Performance only | через CLI | Streamlit — **DEPRECATED** |
-| **Jesse** | 7.9k | активен | MIT | ❓ не подтверждено | ❌ | Interactive | авто-стратегии | Built-in |
-| **OpenBB Terminal** | 67.7k | активен | AGPL-3.0 | ❌ только research | ❌ | ✅ | ❌ | Workspace |
-| **Bybit Perp Web Terminal** (ryu878) | 0 | 4 коммита | MIT | ✅ специально | ❌ | candles | ✅ | React MVP — **сырой** |
+**Чего НЕТ — критично:**
+- ❌ **Manual order placement отсутствует.** Это observer/analyzer, **не trade executor**
+- ❌ Drawing tools уровня TradingView (только базовые)
+- ❌ Встроенных индикаторов уровня TradingView (только базовые)
+- ⚠️ **Fetching trades для Bybit/Hyperliquid не поддерживается** — нет подходящего REST API. Heatmap работает с live данными, но historical lookback trades через REST нет
 
-## Критические открытия
+**Оценка vs ASTRAS/Quantower:** **6/10**.
+- По heatmap/footprint/orderflow — на уровне Bookmap-light, что уже выше большинства брокерских терминалов
+- По manual trading / drawing / индикаторам — сильно слабее
+- Для нашего use case (мониторить что делает PMM Dynamic бот) **идеально**: бот сам ставит ордера, нам нужно видеть рынок и реакцию
 
-### 1. Hummingbot Dashboard — DEPRECATED
+**Sources:** [GitHub](https://github.com/flowsurface-rs/flowsurface), [flowsurface.com](https://flowsurface.com/), [Releases](https://github.com/flowsurface-rs/flowsurface/releases)
 
-Hummingbot Dashboard (наш изначальный fallback в исходных промптах) **больше не разрабатывается**. Последний релиз — октябрь 2024. Команда Hummingbot переходит на новый продукт **Hummingbot Condor** (https://github.com/hummingbot/condor) — official replacement, MIT, активный. Это **отдельное приложение**, не часть Hummingbot Engine.
+### 2. StockSharp (S#) — серьёзный, но с критичными нюансами
 
-Condor даёт:
-- Web dashboard (новый, не Streamlit)
-- Telegram bot для контроля
-- Portfolio PnL за 24h/7d/30d
-- Активные ордера, позиции на CEX (включая Bybit)
-- Manual orders с CEX
-- "Harness for AI trading agents" — задумано как фундамент для будущих AI-стратегий
+| Параметр | Значение |
+|---|---|
+| Репо | https://github.com/StockSharp/StockSharp |
+| Лицензия репо | Apache-2.0 |
+| Stars | ~1.6k |
+| Последний коммит | 16 мая 2026 (11.7k коммитов всего — очень активный) |
+| GUI framework | C# / WPF (+ Avalonia в части сборок) — native Windows desktop |
+| Платформы | Win primary; macOS/Linux только частично через Avalonia |
+| Биржи | **Bybit поддерживается официально** + 90+ других коннекторов |
 
-**Вывод:** наш план должен учитывать Condor, не deprecated Dashboard.
+**Что есть:**
+- **S#.Terminal** — полноценный торговый терминал: charts (70+ индикаторов), order book с heatmap/scalper view, **manual orders**, position management
+- **S#.Designer** — визуальный конструктор стратегий
+- **S#.Hydra** — загрузчик исторических данных
+- Multi-monitor, drawing tools, темы
 
-### 2. OctoBot временно без Bybit
+**КРИТИЧНЫЙ НЮАНС лицензии:**
+- На stocksharp.com/products/sources/ исходники их финального коммерческого билда продаются: **$400/мес индивидуалам, $950/мес компаниям, минимум 6 месяцев подписка**
+- Apache-репо — это исходники базовой части. **Бинарники Designer/Terminal/Hydra скачиваются с сайта бесплатно как закрытые сборки** (это free-as-in-beer, не free-as-in-speech)
+- **Реальная сборка GUI-приложения из репо нетривиальна** — части UI кода в платном репо
+- Формально OSI Apache фильтр проходит (бесплатно после git clone && build && run базовой части), но **на практике** "полный" терминал = либо downloading proprietary binary, либо платить за исходники
 
-OctoBot (популярный 5.9k stars web UI) — Bybit коннектор "will soon be available again" по их README. Пока недоступен. Если вернут — отличный кандидат для no-code UI. Сейчас — нет.
+**Оценка vs ASTRAS/Quantower:** **8/10 по фичам, 5/10 по UX**.
+- По функциональности S#.Terminal **ближе всех к Quantower** из всего OSS
+- По UX — устаревший WPF, документация на русском/в Wiki, кривая обучения крутая
+- Не "красивый", но рабочий
+- Платформа исторически заточена под русский фондовый рынок + Plaza II / QUIK, **крипта приделана сбоку** — качество Bybit-коннектора зависит от того, как часто его правят (бывают баги в issues)
 
-### 3. Для market-making лучший read-only терминал — flowsurface
+**Sources:** [StockSharp GitHub](https://github.com/StockSharp/StockSharp), [Bybit connector docs](https://doc.stocksharp.com/topics/api/connectors/crypto_exchanges/bybit.html)
 
-flowsurface (Rust desktop app, 1.5k stars, GPL-3.0) — это **самая близкая open source альтернатива Bookmap**. Готовые бинарники под Windows. Bybit нативно. Имеет именно то, что нужно market-maker'у:
-- Heatmap исторического order book (видишь где была ликвидность во времени)
-- DOM ladder
-- Footprint charts
-- Time & sales
-- Multi-window для нескольких мониторов
-- Кастомные темы (включая светлую)
+## Tier 2 — близко, но не дотягивают
 
-**Ограничение:** read-only. Поставить ордер вручную нельзя — для этого Bybit web.
+### Plutus Terminal
+- https://github.com/plutus-terminal/plutus-terminal
+- Python desktop, GPL-3.0, активный
+- **Проблема:** только DEX (Foxify, GMX в планах). **Bybit не поддерживается принципиально**
 
-Для нашего use case (наблюдать что делает PMM Dynamic бот) это идеально: мы не должны часто вмешиваться вручную, но должны видеть глубину рынка чтобы понимать почему бот делает то, что делает.
+### VisualHFT
+- https://github.com/visualHFT/VisualHFT
+- WPF/C# native desktop, Apache-2.0, ~1.1k stars
+- **Проблемы:** (1) **Bybit в списке коннекторов НЕТ** (Binance, Bitfinex, BitStamp, Coinbase, Gemini, Kraken, KuCoin, generic WebSocket); (2) только визуализация микроструктуры, **manual orders отсутствуют**; (3) последний релиз — март 2025, граница активности
+- Если бы был Bybit — был бы Tier 1.5
 
-### 4. Никакой OSS desktop terminal не дотягивает до Quantower/ASTRAS по совокупности
+### QtBitcoinTrader (JulyIghor)
+- Native Qt desktop, GPL, реальный exe
+- **Проблема:** последний релиз май 2023, заброшен; Bybit неуверенно
+- Не проходит фильтр активности
 
-Это не плохая новость, это объективная реальность. Quantower и ASTRAS — это десятки человеко-лет разработки коммерческими командами. **Никакой OSS клон не существует на уровне 1-в-1**. Лучшие OSS специализируются:
-- **flowsurface** — orderflow visualization (узко но глубоко)
-- **Profitmaker** — modern widget dashboard (broad но не глубоко)
-- **FreqUI** — bot-specific monitoring (привязан к Freqtrade)
-- **Condor** — Hummingbot-specific monitoring
+### bybit-tools (TranceGeniK)
+- Electron desktop, GPL-3.0, есть manual orders включая scaled
+- **Проблема:** в README сказано **"Bybit-tools is not maintained anymore"**. Заброшен
 
-Поэтому **правильное решение — не искать "one terminal to rule them all"**, а **собрать composite UI** из нескольких узкоспециализированных инструментов.
+## Tier 3 — НЕ подходят и почему
 
-## Рекомендованный стек
+| Кандидат | Причина отказа |
+|---|---|
+| **Profitmaker** (suenot) | Лицензия "MIT + Commons Clause" — НЕ OSI-approved. Плюс это **web app** (React + Vite на :8080). Двойной фейл |
+| **OpenAlgo Desktop** (Tauri 2.0, Rust) | Native desktop ✓, AGPL-3.0 ✓, но поддерживает **только индийских брокеров** (Angel One, Zerodha, Fyers). Bybit нет, крипты нет |
+| **OpenBB Platform** | Python SDK + CLI + web Workspace (последний — фактически SaaS на pro.openbb.co). **Нативного desktop приложения нет** |
+| **gocryptotrader** | CLI/gRPC-сервер, GUI клиента нет |
+| **ASTRAS-Trading-UI** (alor-broker) | Apache-2.0, активный (релиз 7.0 — июнь 2025), но это **Angular web app** (запускается `pnpm start` на :4200). Заточен под MOEX/ALOR, крипты по сути нет. Desktop-обёртки нет |
+| **Kupi terminal** (FXCryptoCat) | Express.js + React/Vue web-app, не desktop. 1 star, мёртв |
+| **Cryexc** (josedonato) | Не open source — исходников нет. Даже если бы были — C++ + ImGui компилируется в WASM (web) |
+| **HyperData Terminal** | TUI dashboard, не GUI с мышкой |
+| **OpenTrader** | Web UI на :8000, не desktop |
+| **TradeMaster-NTU** | RL research platform на Python с Jupyter, не торговый терминал |
+| **Hummingbot Dashboard** | Streamlit web — НЕ desktop. **Plus deprecated** (последний релиз 10-2024) |
+| **Hummingbot Condor** | Web + Telegram — НЕ desktop. (хоть и активный OSS) |
+| **Freqtrade FreqUI** | Vue web app — НЕ desktop |
+| **Superalgos** | Web — НЕ desktop |
+| **OctoBot** | Web — НЕ desktop |
+| **Jesse** | Web built-in — НЕ desktop |
+| **NautilusTrader** | Production-grade engine, **нет GUI вообще** — только Python/Jupyter |
+| **Tribeca** | Мёртв с 2015 |
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│  Monitor 1: Bybit web (testnet.bybit.com)                      │
-│  - Все ордера и позиции (которые ставит Hummingbot)             │
-│  - Manual override 2 клика                                      │
-│  - Встроенный TradingView чарт                                  │
-│  - DOM/L2 order book                                            │
-│  - PnL, fills history, баланс                                   │
-│  - 100% синхронизирован с тем что видит Hummingbot              │
-├────────────────────────────────────────────────────────────────┤
-│  Monitor 2: TradingView (бесплатный аккаунт)                    │
-│  - Серьёзный теханализ, indicators, drawing tools               │
-│  - Multi-timeframe                                              │
-│  - Можно подключить Bybit как broker                            │
-│  - Best-in-class качество графиков                              │
-├────────────────────────────────────────────────────────────────┤
-│  Monitor 3 (опционально): flowsurface                          │
-│  - Heatmap + footprint + DOM ladder                             │
-│  - Для понимания глубины ликвидности                            │
-│  - Read-only, локальный Rust desktop app                        │
-├────────────────────────────────────────────────────────────────┤
-│  Headless: Hummingbot Condor                                    │
-│  - Web dashboard + Telegram                                     │
-│  - Portfolio aggregation                                        │
-│  - Manual orders через UI/Telegram                              │
-│  - Параллельно с Hummingbot CLI                                 │
-└────────────────────────────────────────────────────────────────┘
-```
+## ASTRAS / российское комьюнити — отдельная проверка
 
-**Стоимость:** $0 (Bybit web и TradingView free — бесплатные сервисы, не open source но и не self-hosted софт; flowsurface и Condor — OSS).
+Пользователь упомянул ASTRAS от ALOR как референс качества. Проверено:
 
-**Качество:** ~80% от опыта Quantower/ASTRAS, без trial/paywall ограничений, с возможностью аудита OSS-частей.
+- **ALOR публикует SDK** на GitHub (`alor-broker/openapi.sdk`, `alor-broker/Astras-Trading-UI`), но всё под **web** (Angular)
+- **Desktop-приложения, вдохновлённого ASTRAS, на GitHub нет**
+- **ASTRAS Windows-клиент (.NET WPF) — closed source**
+- Open source от ALOR — только их Angular-вебка
+- Российских OSS desktop-стакан-визуализаторов крипты в значимом количестве **на GitHub нет**
+- Большая часть русскоязычного крипто-OSS — это боты (Hummingbot-форки, тинькоф Avalonia-проекты под их Invest API) либо closed source утилиты в Telegram
 
-**Время на запуск:** один вечер.
+## Объективная реальность рынка — почему OSS desktop terminal уровня Quantower/ASTRAS почти не существует
 
-## Альтернативы (если стек выше не подойдёт)
+Это закономерность, а не пробел поиска:
 
-### Если нужен один self-hosted desktop terminal с manual orders
+1. **Cryptowatch Desktop** (тот самый Rust+iced проект Kraken, который был "правильным" продуктом) **закрыт Kraken 30 сентября 2023**. flowsurface фактически занял освободившийся вакуум.
 
-**Profitmaker** (https://github.com/suenot/profitmaker) — React 18 + shadcn/ui + Tailwind, drag-drop widgets, PostgreSQL. Bybit через CCXT (стабильно). Manual orders: market/limit/stop/TP/trailing-stop/iceberg. Виджеты: chart, order book, trades feed, order form, portfolio, positions.
+2. **Трудозатраты на полнофункциональный терминал** — десятки человеко-лет. Quantower разрабатывают с 2017, NinjaTrader с 2003. OSS-комьюнити обычно покрывает либо одну фичу хорошо (flowsurface — orderflow), либо платформу для разработки бота (Freqtrade, Hummingbot), но не "терминал-всё-в-одном".
 
-**Минус:** лицензия **MIT + Commons Clause** — это не чисто OSI-approved (Commons Clause запрещает коммерческое использование как SaaS). Для личного использования OK, но если строго "только OSI-approved" — не подходит.
+3. **Узкая аудитория**: serious manual traders готовы платить $50-200/мес за Bookmap/Quantower/Sierra Chart — коммерческие продукты доминируют и засасывают талант.
 
-### Если хочется "всё в одном Python-приложении"
+4. **Сложность поддержки live trading в production**: ответственность за чужие деньги при ошибке, exchange API меняются каждые 2-3 месяца — отпугивает мейнтейнеров. Многие проекты сознательно остаются именно read-only (как flowsurface).
 
-**Freqtrade + FreqUI** — самый зрелый стек (50k+ stars). Но **FreqUI это UI для бота Freqtrade**, не general-purpose terminal. Нет DOM. Manual orders только для пар которые Freqtrade сам отслеживает. Параллельная работа с Hummingbot — возможна, но Freqtrade захочет сам торговать (надо запускать в dry-run).
+5. **Бизнес-модель**: даже у Quantower бесплатна только базовая версия. Чисто OSS вне зоны экономического стимула для разработчиков-трейдеров.
 
-### Чего НЕ делать
+**Вывод:** flowsurface — это **потолок OSS desktop crypto orderflow на 2026 год**. StockSharp Terminal — потолок по manual trading capability, но с нюансами.
 
-- ❌ **Hummingbot Dashboard** — deprecated, не вкладывайся
-- ❌ **OctoBot прямо сейчас** — Bybit отключён, ждать пока вернут
-- ❌ **Tribeca** — мёртв с 2015
-- ❌ **OpenBB Terminal** — research, не trading
-- ❌ **Quantower / Bookmap / NinjaTrader / ASTRAS** — proprietary
-- ❌ **wundertrading / 3Commas / finestel** — SaaS с paid tiers
-- ❌ **Строить свой terminal с нуля** — для $1000-2000 капитала экономически бессмысленно
-- ❌ **Заменять сам Hummingbot** на что-то другое — он работает, Avellaneda-Stoikov скомпилирован, не трогать
+## DIY оценка — если строить своё
 
-## Action plan для Sprint 0 (обновлённый)
+Если flowsurface (read-only) и StockSharp (платные исходники GUI) не устраивают — реалистичный путь это **построить свой минимальный desktop terminal**.
 
-### Шаг A: ✅ Bybit testnet в Hummingbot — ВЫПОЛНЕНО
+| Стек | Время до MVP | Время до "near-Quantower lite" | Плюсы / Минусы |
+|---|---|---|---|
+| **Tauri (Rust core) + TradingView lightweight-charts + bybit-api (TS) или ccxt-rs** | 2-3 недели | 4-6 месяцев (1 dev) | Малый бинарь (~10MB), быстрый, low memory. lightweight-charts Apache-2.0. **Минус:** lightweight-charts без footprint/heatmap — для них нужно своё (egui-charts даёт 130+ индикаторов как альтернатива) |
+| **Electron + lightweight-charts + ccxt (Node)** | 1-2 недели | 3-5 месяцев | Самый быстрый старт, max экосистема. **Минус:** 150-300MB бинарь, прожорливый, "ощущается" как браузер |
+| **Avalonia 11 (C#) + LiveCharts2 + Bybit.Net (jkorf)** | 3-4 недели | 4-6 месяцев | Истинно native, кроссплатформа Win/Mac/Linux, по UX ближе к Quantower. Хорошие .NET-библиотеки для Bybit. **Минус:** меньше OSS примеров под крипту |
 
-(балансы видны: $1270 total на bybit_testnet — это spot, не perpetual; для PMM Dynamic нужно дополнительно `connect bybit_perpetual_testnet`)
+**Бутстрап MVP за выходные (Tauri):** окно с одним символом, real-time candles через WS, минимальный стакан, кнопки Market Buy/Sell с pre-filled размером. Это **"одно окно вместо браузера"**, не Quantower-замена. До flowsurface-уровня heatmap+footprint — реально **месяцы**.
 
-### Шаг B (пересмотрено): Composite UI вместо Quantower
+## Финальная рекомендация — три варианта
 
-1. **Bybit testnet web** — открыть в Chrome, залогиниться, видеть всё что делает Hummingbot
-2. **TradingView free** — открыть BYBIT:BTCUSDT.P чарт на втором мониторе
-3. **flowsurface** (опционально, но рекомендуется) — скачать Windows binary с GitHub, подключить Bybit
-4. **Hummingbot Condor** (отложить до Sprint 1 или 2) — установка отдельная, есть смысл когда стратегия запущена
+### Вариант A: 🟢 flowsurface + Hummingbot CLI (рекомендую как pragmatic minimum)
 
-### Шаг C: Smoke test (изменён)
+- Установить **flowsurface** (Windows .exe из Releases) как desktop terminal для наблюдения
+- Manual orders (если редко нужны) — через Hummingbot CLI команды или Bybit web (но строго: web не входит в наш OSS стек, это аварийная опция)
+- Хватит для Sprint 1 (запуск PMM Dynamic): бот сам ставит ордера, flowsurface показывает рынок
+- **Затраты:** 0 минут setup, $0
+- **Закрывает Sprint 0 acceptance.** Можно сразу к Sprint 1
 
-Вместо размещения ордера через Quantower:
-1. Открыть Bybit testnet web
-2. Разместить лимит-ордер на покупку 0.001 BTC по цене сильно ниже рынка (~50000 при рынке 67000)
-3. Проверить: ордер видно на Bybit testnet web ✅
-4. В Hummingbot CLI: `orders` или `status` — должен видеть ордер (если в режиме `connect bybit_perpetual_testnet`)
-5. Отменить ордер через Bybit web → исчезает
+### Вариант B: 🟡 StockSharp Terminal (если manual orders из GUI обязательны)
 
-Это покрывает acceptance criteria "ордер размещён + виден в обеих системах + отменён".
+- Скачать бесплатный бинарник S#.Terminal с stocksharp.com
+- Настроить Bybit-коннектор, базовый workflow
+- **Плюсы:** реальный desktop с manual orders, charts, DOM
+- **Минусы:** устаревший UX (~5/10), исходники GUI-сборок платные ($400/мес если захочешь патчить), документация местами только на русском, баги в Bybit-коннекторе бывают
+- **Затраты:** ~3-4 часа на установку и освоение
+- Это **не чистая OSS** в строгом смысле (free binary + paid sources), но формально базовая платформа Apache-2.0
 
-## Открытые вопросы для архитектора
+### Вариант C: 🔴 DIY на Tauri (если ничто готовое не устраивает)
 
-1. **Spot vs Perpetual.** Сейчас подключён `bybit_testnet` (spot). Для PMM Dynamic нужен `bybit_perpetual_testnet`. Перевести USDT в Derivatives Account? Или использовать spot для первой стратегии (PMM работает и на spot)?
-2. **Condor сейчас или потом.** Установить Condor в Sprint 0 (чтобы был с самого начала) или отложить до Sprint 2 когда мы будем готовы к multi-asset deployment? Я склоняюсь к "отложить" — для одиночного PMM на одном активе Hummingbot CLI + Bybit web достаточно.
-3. **flowsurface цвет лицензии.** GPL-3.0 — copyleft, если мы добавим свои патчи и захотим их распространять — обязаны под той же лицензией. Для нашего use case (мы клиент, не разработчик) это не проблема. Но стоит явно подтвердить.
-4. **TradingView free аккаунт.** Бесплатный tier — 3 indicators, 1 chart per tab. Для market-making это хватает. Если понадобится больше — Pro $14.95/мес. Принципиально ли остаться 100% free?
+- Свой минимальный desktop terminal: Tauri + lightweight-charts + bybit-api
+- MVP за 2-3 недели solo
+- "Near-Quantower lite" за 4-6 месяцев
+- **Плюсы:** полный контроль, чистый OSS-стек, можно затачивать под наш use case
+- **Минусы:** это **отдельный проект на месяцы**, отодвигает реальную торговлю. Для $1000-2000 капитала экономически сомнительно
 
-## Финальная рекомендация
+## Моя рекомендация для нашего проекта
 
-**Сменить план Sprint 0:**
-- Quantower вычеркнуть полностью
-- Composite UI = **Bybit web + TradingView free + (опционально) flowsurface**
-- Hummingbot Condor рассмотреть в Sprint 1-2
-- Acceptance criteria адаптировать: "ордер размещён и виден" заменить на "ордер размещён через Bybit web и виден в Hummingbot CLI через `orders`"
+**Вариант A (flowsurface) для Sprint 0/1**, с возможным переходом на **Вариант C (DIY на Tauri)** позже, когда:
+- Стратегия PMM Dynamic подтвердит прибыльность в testnet
+- Мы поймём какие именно visual фичи нам реально нужны (а не "все")
+- Капитал и опыт оправдают вложение в свой terminal
 
-**Этот пивот:**
-- Снижает риски (no trial, no paywall, no proprietary)
-- Не теряет качество (Bybit web + TradingView объективно лучше многих OSS terminals)
-- Не блокирует следующие спринты (Sprint 1 запуск стратегии не зависит от выбора UI)
-- Сохраняет возможность позже добавить любой OSS terminal без переделок
+**Почему не Вариант B (StockSharp):** платная подписка на исходники GUI противоречит духу "100% OSS", даже если базовая лицензия Apache. Бесплатный бинарник из непрозрачной сборки — это де-факто proprietary.
 
-## Источники
+**Что НЕ делать сейчас:**
+- ❌ Тратить недели на DIY терминал до того как стратегия доказала прибыльность
+- ❌ Использовать web/SaaS решения как замену desktop (отклонено пользователем)
+- ❌ Пытаться построить идеальный terminal — perfect is enemy of good
 
-- [flowsurface](https://github.com/flowsurface-rs/flowsurface) — 1.5k ⭐, Rust, Bookmap-style heatmap
-- [Profitmaker](https://github.com/suenot/profitmaker) — modern widget terminal
-- [Hummingbot Condor](https://github.com/hummingbot/condor) — official replacement for deprecated Dashboard
-- [Hummingbot Dashboard (deprecated)](https://github.com/hummingbot/dashboard)
-- [Condor docs](https://hummingbot.org/condor/)
-- [Freqtrade](https://github.com/freqtrade/freqtrade) — 50k ⭐, мощнейший Python framework
-- [FreqUI](https://github.com/freqtrade/frequi) — Vue UI для Freqtrade
-- [OctoBot](https://github.com/Drakkar-Software/OctoBot) — web UI, Bybit временно отключён
-- [NautilusTrader](https://github.com/nautechsystems/nautilus_trader) — production engine, без GUI
-- [Superalgos](https://github.com/Superalgos/Superalgos) — visual designer
-- [Jesse](https://github.com/jesse-ai/jesse) — Python framework для крипты
-- [OpenBB Terminal](https://github.com/OpenBB-finance/OpenBB) — research only
-- [Tribeca](https://github.com/michaelgrosner/tribeca) — мёртв
-- [Bybit Perp Web Terminal (ryu878)](https://github.com/ryu878/Bybit-Perpetual-Web-Terminal) — MVP, для справки
-- [Freqtrade vs Hummingbot](https://gainium.io/compare/freqtrade-vs-hummingbot)
-- [Best OSS crypto bots 2026](https://gainium.io/best/open-source)
-- [QuantVPS Bookmap alternatives](https://www.quantvps.com/blog/bookmap-alternatives)
+## Action plan для закрытия Sprint 0
+
+1. **Установить flowsurface** на Windows:
+   - Скачать `flowsurface-windows-x86_64.zip` с https://github.com/flowsurface-rs/flowsurface/releases/latest
+   - Распаковать, запустить `.exe`
+   - В UI: Settings → добавить Bybit (без API ключей, для маркет-даты не нужны)
+   - Открыть BTC/USDT chart, heatmap, footprint — убедиться что работает
+   - Время: 10-15 минут
+
+2. **Smoke test** в новой схеме:
+   - Hummingbot CLI запущен (`connect bybit_testnet` уже работает)
+   - flowsurface запущен с Bybit
+   - В Hummingbot CLI `status` показывает баланс/позиции
+   - В flowsurface виден live рынок BTCUSDT
+   - Опционально: разместить тестовый ордер через Hummingbot CLI команду (или через `connect bybit_perpetual_testnet` и `balance`)
+   - Время: 10-15 минут
+
+3. **Обновить sprint_0_report.md** результатами + скриншоты flowsurface
+
+4. **Commit + push** → Sprint 0 закрыт → переходим к Sprint 1
+
+## Sources
+
+- [flowsurface — main repo](https://github.com/flowsurface-rs/flowsurface)
+- [flowsurface — site](https://flowsurface.com/)
+- [flowsurface — releases (binaries)](https://github.com/flowsurface-rs/flowsurface/releases)
+- [StockSharp main repo](https://github.com/StockSharp/StockSharp)
+- [StockSharp Bybit connector docs](https://doc.stocksharp.com/topics/api/connectors/crypto_exchanges/bybit.html)
+- [Plutus Terminal](https://github.com/plutus-terminal/plutus-terminal)
+- [VisualHFT](https://github.com/visualHFT/VisualHFT)
+- [OpenAlgo Desktop (Tauri)](https://github.com/marketcalls/openalgo-desktop)
+- [QtBitcoinTrader](https://github.com/JulyIghor/QtBitcoinTrader)
+- [bybit-tools (abandoned)](https://github.com/TranceGeniK/bybit-tools)
+- [ASTRAS-Trading-UI (Angular web)](https://github.com/alor-broker/Astras-Trading-UI)
+- [Tauri framework](https://github.com/tauri-apps/tauri)
+- [TradingView lightweight-charts](https://github.com/tradingview/lightweight-charts)
+- [bybit-api (TypeScript)](https://github.com/tiagosiebler/bybit-api)
+- [Bybit.Net (C# .NET)](https://github.com/JKorf/Bybit.Net)
+- [Awesome Tauri apps](https://github.com/tauri-apps/awesome-tauri)
+- [QuantVPS — Top 7 Bookmap Alternatives](https://www.quantvps.com/blog/bookmap-alternatives)
+- [Hummingbot Condor (web, для справки)](https://github.com/hummingbot/condor)
