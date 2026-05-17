@@ -32,31 +32,30 @@ Adapter их берёт автоматически (см. `bybit-adapter/.env`, 
 
 ## 1+2. Запуск adapter + Astras одной командой
 
+В терминале PyCharm (или любом другом):
 ```powershell
 cd C:\BUFFER\mm-bot
-.\scripts\dev.ps1
+npm run dev
 ```
 
-Скрипт:
-- освобождает порты 3000 и 4200 (убивает старые `ng serve` / `npm run dev` если зависли);
-- спавнит **bybit-adapter** в отдельном окне PowerShell с заголовком `bybit-adapter (port 3000)`;
-- ждёт пока adapter ответит на `/health` (≈1-3 секунды);
-- спавнит **Astras dev server** в отдельном окне с заголовком `astras-bybit-ui (port 4200)`.
+Что произойдёт:
+- `predev` хук убивает старые процессы на портах 3000 и 4200 (если зависли)
+- `concurrently` стартует оба процесса в текущем терминале с цветными префиксами:
+  - `[adapter]` (зелёный) — bybit-adapter, порт 3000
+  - `[astras]`  (синий)   — Astras dev server, порт 4200
+- При падении одного — второй тоже останавливается (`--kill-others-on-fail`)
+- **Ctrl+C** в этом терминале убивает обоих
 
-Astras собирается ~35 секунд. Когда в его окне появится:
+Astras собирается ~35 секунд при первом запуске. Когда в выводе появится:
 ```
-  ➜  Local:   http://localhost:4200/
+[astras]   ➜  Local:   http://localhost:4200/
 ```
 — открой эту ссылку в **Chrome** (другие браузеры могут иметь quirks).
 
-**Остановить:** закрой оба новых окна, либо запусти `dev.ps1` ещё раз — он сам убьёт старые процессы перед запуском новых.
+**Только adapter** (без Astras): `npm run dev:adapter`
+**Только Astras** (без adapter): `npm run dev:astras`
 
-**Если PowerShell блокирует скрипт** ("running scripts is disabled on this system"), один раз выполни:
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-**Быстрая проверка adapter** (в третьем окне PowerShell):
+**Быстрая проверка adapter** (во втором окне терминала):
 ```powershell
 curl http://127.0.0.1:3000/health
 curl http://127.0.0.1:3000/md/v2/Securities/BYBIT/BTCUSDT
@@ -64,19 +63,14 @@ curl http://127.0.0.1:3000/md/v2/Securities/BYBIT/BTCUSDT
 
 Первый отдаст `{"ok":true,...}`. Второй — JSON с описанием BTCUSDT (live данные с Bybit Demo).
 
-### Альтернативный запуск (вручную, если скрипт не подходит)
+### Первый запуск: нужно один раз поставить deps mm-bot
 
-В двух разных окнах PowerShell:
 ```powershell
-# Окно 1
-cd C:\BUFFER\mm-bot\bybit-adapter
-npm run dev
+cd C:\BUFFER\mm-bot
+npm install
 ```
-```powershell
-# Окно 2
-cd C:\BUFFER\mm-bot\astras-bybit-ui
-pnpm start
-```
+
+Ставит `concurrently` и `kill-port` (28 пакетов, ~6 сек). Deps bybit-adapter и astras-bybit-ui уже стоят в их подпапках.
 
 ---
 

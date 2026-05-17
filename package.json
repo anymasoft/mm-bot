@@ -1,0 +1,15 @@
+{
+  "name": "mm-bot-dev",
+  "private": true,
+  "description": "Dev orchestration for anymasoft/mm-bot — runs bybit-adapter and astras-bybit-ui together in one terminal.",
+  "scripts": {
+    "predev": "kill-port 3000 4200 || exit 0",
+    "dev": "concurrently --names adapter,astras --prefix-colors green,cyan --kill-others-on-fail \"npm --prefix bybit-adapter run dev\" \"pnpm --dir astras-bybit-ui start\"",
+    "dev:adapter": "npm --prefix bybit-adapter run dev",
+    "dev:astras": "pnpm --dir astras-bybit-ui start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "kill-port": "^2.0.1"
+  }
+}
