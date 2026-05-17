@@ -1,6 +1,17 @@
 # Руководство по ежедневной работе с торговой системой
 
-Эта инструкция описывает, как запускать, использовать и обслуживать связку **Hummingbot (в WSL2) + Quantower (на Windows)** для market-making торговли на Bybit testnet.
+**ВАЖНО (Sprint 4 pivot):** этот документ написан до Sprint 4 и описывает legacy workflow с Hummingbot + Quantower. Текущий workflow в Sprint 4+ — **PMM Dynamic стратегия в `bybit-adapter` (TypeScript) + Astras admin panel + Bybit web UI**. Hummingbot оставлен как dormant fallback, в обычном workflow не запускается.
+
+- **Актуальный workflow:** [`docs/USAGE_BYBIT_WEB.md`](docs/USAGE_BYBIT_WEB.md)
+- **Архитектура стратегии:** [`docs/architecture/strategy_engine.md`](docs/architecture/strategy_engine.md)
+
+Ниже сохранён legacy раздел про Hummingbot — на случай если потребуется его расконсервировать для cross-validation.
+
+---
+
+## Legacy: Hummingbot + Quantower workflow (НЕ ИСПОЛЬЗУЕТСЯ в Sprint 4+)
+
+Эта инструкция описывала, как запускать, использовать и обслуживать связку **Hummingbot (в WSL2) + Quantower (на Windows)** для market-making торговли на Bybit testnet.
 
 ## Что есть в системе
 
