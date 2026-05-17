@@ -51,9 +51,15 @@
 - `hummingbot.strategy.avellaneda_market_making.avellaneda_market_making.AvellanedaMarketMakingStrategy` — **Avellaneda-Stoikov OK** (целевая стратегия)
 - `hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_derivative.BybitPerpetualDerivative` — Bybit connector OK
 
-### Quantower
+### Quantower — ОТКЛОНЁН (не open source)
 
-⚠️ **НЕ установлен в Sprint 0** — требует ручного скачивания с https://www.quantower.com и интерактивной настройки (Quantower Account, язык, тема, подключение Bybit). См. раздел "Открытые шаги" ниже.
+⚠️ **Quantower вычеркнут из проекта.** При оценке обнаружено: free trial 7 дней, потом Crypto Package / Multi-asset / Advanced Features — отдельно платные. **Не open source, исходники недоступны.**
+
+Решено пивотнуть на 100% OSS стек до начала торговой работы. См. детальное research: [`../research/oss_trading_terminals.md`](../research/oss_trading_terminals.md).
+
+**Замена:** composite UI = **Bybit web + TradingView free + (опционально) flowsurface + Hummingbot Condor**.
+
+**Также важно:** **Hummingbot Dashboard deprecated** (последний релиз 10-2024), официальный заменитель — [**Hummingbot Condor**](https://github.com/hummingbot/condor). Это меняет архитектурное решение про visualisation layer.
 
 ## Bybit testnet
 
@@ -73,9 +79,10 @@
 | Что | Статус |
 |----|--------|
 | Hummingbot connector `bybit_perpetual_testnet` | загружается ✓ |
-| Hummingbot CLI `connect bybit_perpetual_testnet` | ⚠️ **требует ручной шаг** — см. ниже |
-| Hummingbot CLI `balance` | ⚠️ зависит от предыдущего шага |
-| Quantower подключение | ⚠️ не настроено (Quantower не установлен) |
+| Hummingbot CLI `connect bybit_testnet` (spot) | ✅ **ВЫПОЛНЕНО** |
+| Hummingbot CLI `balance` | ✅ **РАБОТАЕТ** — показано 0.0085 BTC + 608.65 USDT = **$1270 total** на bybit_testnet (spot) |
+| Hummingbot CLI `connect bybit_perpetual_testnet` | ⚠️ для PMM Dynamic нужно дополнительно подключить perpetual connector (нужны USDT в Derivatives Account на Bybit) |
+| UI для визуализации | ⚠️ **План изменён** — см. research doc |
 
 ## Smoke test
 
@@ -103,57 +110,44 @@
 **Причина:** `Security.secrets_manager_class` отсутствует в новой версии (API refactored).
 **Решение:** оставить как интерактивный шаг через CLI Hummingbot (1 минута). Это единоразовая настройка.
 
-## Открытые шаги (требуют пользователя)
+## Выполненные шаги
 
-### Шаг A: Hummingbot — connect Bybit testnet + balance check
+### Шаг A: ✅ Hummingbot — connect Bybit testnet + balance check
 
-В WSL terminal:
-```bash
-cd ~/projects/hummingbot
-source ~/miniconda3/etc/profile.d/conda.sh
-conda activate hummingbot
-python bin/hummingbot.py
-```
+Выполнено пользователем интерактивно через CLI. Скриншот в чате архитектора подтверждает:
+- `connect bybit_testnet` — спот connector подключился
+- `balance` показал на bybit_testnet:
+  - BTC: 0.0085 (≈ $661.1)
+  - USDT: 608.6543 (≈ $608.6)
+  - **Total: $1269.7**
+- **Никаких UTA issues** — баланс отображается корректно
 
-В Hummingbot CLI:
-1. При первом запуске придумать **password** (используется для шифрования conf/connectors/).
-2. Ввести команду:
-   ```
-   connect bybit_perpetual_testnet
-   ```
-3. На запрос API key ввести значение из `.env` (`MM_BOT_BYBIT_API_KEY`)
-4. На запрос API secret ввести значение из `.env` (`MM_BOT_BYBIT_API_SECRET`)
+**Замечание:** подключён `bybit_testnet` (spot connector), не `bybit_perpetual_testnet`. Для PMM Dynamic Avellaneda-Stoikov потребуется дополнительный `connect bybit_perpetual_testnet` с переводом USDT в Derivatives Account на Bybit testnet. Это будет частью Sprint 1.
 
-   Из WSL `.env` доступен по пути `/mnt/c/BUFFER/mm-bot/.env`. Удобно открыть его в редакторе и скопировать значения. **Никогда не вставлять ключи напрямую в git-коммиты или публичные документы.**
-5. Ввести `balance` — должен показать USDT баланс на bybit_perpetual_testnet.
+### Шаг B: ⛔ Quantower — ОТКЛОНЁН (см. research)
 
-**Если balance = 0 при наличии USDT** — это UTA issue. Записать сюда в отчёт и сообщить архитектору.
+Quantower оказался **не open source** (free trial 7 дней + платные пакеты Crypto/Multi-asset). Пивот на 100% OSS стек.
 
-### Шаг B: Quantower — установка и настройка
+**Новый план (см. [research doc](../research/oss_trading_terminals.md)):** composite UI вместо single-vendor desktop terminal:
 
-1. Открыть https://www.quantower.com → Download → Windows installer
-2. Установить как обычное Windows-приложение
-3. Создать **Quantower Account** (email + password)
-4. **Settings → General → Language → Russian** → перезапуск
-5. **Settings → Appearance → Theme → Light**
-6. **Connections → Add Connection → Bybit**:
-   - Mode: Trading
-   - Network: Testnet
-   - API Key: значение из `.env` (`MM_BOT_BYBIT_DEMO_API_KEY` — отдельная пара для Quantower для разделения ролей) **ИЛИ** те же что в Hummingbot
-   - API Secret: соответствующий (`MM_BOT_BYBIT_DEMO_API_SECRET` или `MM_BOT_BYBIT_API_SECRET`)
-7. Проверить: статус **Connected**, баланс ~10 000 USDT, график **BTCUSDT.P** обновляется
+1. **Bybit testnet web** — primary trading UI (все ордера, позиции, manual override). Тот же endpoint, что Hummingbot.
+2. **TradingView free** — серьёзный теханализ на втором мониторе (лучшие в индустрии charts).
+3. **flowsurface** (опционально) — Rust desktop app, GPL-3.0, Bookmap-style heatmap + DOM ladder. Native Bybit. Read-only визуализатор.
+4. **Hummingbot Condor** (для Sprint 1-2) — официальная замена deprecated Dashboard. Web + Telegram, portfolio aggregation.
 
-Если ошибка "Timestamp error" — синхронизировать время Windows: Settings → Time & Language → Sync now.
+### Шаг C: 🔄 Smoke test — упрощён
 
-### Шаг C: Smoke test
+Старая версия требовала Quantower. Новая (через OSS стек):
 
-1. В Quantower открыть **DOM Trader** для BTCUSDT.P
-2. Разместить **лимитный ордер на покупку 0.001 BTC** по цене **значительно ниже рынка** (например, рынок 67000, ставим 50000)
-3. Подтвердить → ордер должен появиться в **Working Orders**
-4. Открыть https://testnet.bybit.com → Orders → подтвердить что ордер видно там
-5. Из Quantower **отменить** ордер → исчезает из Quantower и testnet.bybit.com
+1. Открыть https://testnet.bybit.com в Chrome
+2. Разместить лимит-ордер на покупку 0.001 BTC по цене сильно ниже рынка (например 50000 при рынке 67000)
+3. Проверить: ордер виден на Bybit web в **Orders → Active**
+4. В Hummingbot CLI (если подключён `bybit_perpetual_testnet`): `orders` или `status`
+5. Отменить ордер через Bybit web → исчезает
 
-Если ордер виден в обеих системах — smoke test пройден.
+Это покрывает acceptance criteria "ордер размещён + виден + отменён".
+
+**Альтернатива:** перенести smoke test в Sprint 1 (когда уже будет запущена реальная PMM Dynamic стратегия, бот сам начнёт ставить ордера — это и будет лучший smoke test).
 
 ## Артефакты, созданные в этом спринте
 
@@ -169,13 +163,29 @@ python bin/hummingbot.py
 
 ## Открытые вопросы для архитектора
 
-1. **Sprint 1 готовность.** Когда пользователь завершит Шаги A/B/C, можно ли сразу переходить к Sprint 1 (запуск PMM Dynamic на BTCUSDT testnet)? Или нужна промежуточная проверка отчёта от пользователя?
+1. **Quantower вычеркнут — какой OSS стек выбрать?** См. детальное [research doc](../research/oss_trading_terminals.md). Главная развилка:
+   - **Вариант 1 (рекомендую):** composite UI = Bybit web + TradingView free + flowsurface (опц.) + Hummingbot Condor. $0 затрат, ~80% качества Quantower, всё OSS-friendly.
+   - **Вариант 2:** self-hosted Profitmaker (single web terminal, виджеты). Но лицензия MIT + Commons Clause (не чисто OSI-approved).
+   - **Вариант 3:** Freqtrade + FreqUI. Но FreqUI привязан к Freqtrade-боту, не general-purpose.
 
-2. **UTA balance display.** Если в Шаге A balance = 0 при наличии USDT — это известная проблема. План B (subaccount) или другой подход?
+2. **Hummingbot Dashboard deprecated — нужен ли Condor сразу?** Поставить в Sprint 0 или отложить до Sprint 1-2? Для одиночного PMM на одном активе можно обойтись Hummingbot CLI + Bybit web.
 
-3. **Quantower API keys.** Использовать те же что в Hummingbot, или вторую пару с Read-only правами? Сейчас в `.env` есть отдельные **Demo keys** — их можно использовать в Quantower для разделения ролей.
+3. **Spot vs Perpetual для первой стратегии.** Сейчас подключён `bybit_testnet` (spot, $1270 видно). Для PMM Dynamic классически — perpetual. План:
+   - А) В Sprint 1 переключиться на `bybit_perpetual_testnet`, перевести USDT в Derivatives Account
+   - Б) Сделать первый запуск на spot (PMM Dynamic поддерживает spot тоже)
+   Что предпочтительнее?
 
-4. **Hummingbot версия 2.14.0** — самая свежая на дату. Подходит для нашего use case с PMM Dynamic / Avellaneda-Stoikov.
+4. **flowsurface GPL-3.0** — мы клиенты, не разработчики, поэтому copyleft нас не ограничивает. Подтверждение?
+
+5. **TradingView free tier** — 3 indicators, 1 chart per tab. Хватит для MM или Pro $14.95/мес.?
+
+6. **Sprint 0 acceptance закрыть.** Считаем Sprint 0 закрытым по факту:
+   - Инфраструктура работает (Hummingbot + Bybit testnet $1270 видны)
+   - Решение по OSS UI принято (composite stack)
+   - Документация и git-репо готовы
+   - Quantower-зависимые шаги адаптированы
+
+   Или нужно дополнительно: установить flowsurface + сделать smoke test через Bybit web до перехода к Sprint 1?
 
 ## Следующий шаг
 
@@ -195,7 +205,7 @@ python bin/hummingbot.py
 3. `sprint_0_quantower_order.png` — Quantower DOM Trader с тестовым ордером
 4. `sprint_0_hummingbot_balance.png` — Hummingbot CLI после команды `balance`
 
-## Acceptance criteria — статус
+## Acceptance criteria — статус (обновлено после пивота Quantower)
 
 - [x] WSL2 установлен и работает
 - [x] Ubuntu в WSL запускается, есть UNIX user (`dev`)
@@ -204,14 +214,16 @@ python bin/hummingbot.py
 - [x] `conda env hummingbot` создан и активируется (Python 3.13.13)
 - [x] `./compile` завершился без ошибок
 - [x] `bin/hummingbot.py` запускает CLI (Version 2.14.0)
-- [ ] Quantower установлен на Windows, на русском, светлая тема — **ШАГ B**
-- [ ] Bybit testnet API key работают в Hummingbot — **ШАГ A**
-- [x] Testnet USDT (~10 000) получены пользователем ранее (заявлено)
-- [ ] Hummingbot CLI: `balance` показывает USDT — **ШАГ A**
-- [ ] Quantower: видит баланс и график BTCUSDT.P — **ШАГ B**
-- [ ] Smoke test: ордер размещён через Quantower — **ШАГ C**
+- [x] Bybit testnet API key работают в Hummingbot ✅
+- [x] Hummingbot CLI: `balance` показывает $1270 (BTC + USDT) ✅
+- [x] Testnet USDT получены и видны
+- ~~Quantower установлен~~ → **ВЫЧЕРКНУТО (не open source)**
+- ~~Quantower видит баланс~~ → **ВЫЧЕРКНУТО**
+- [ ] **(новое)** OSS UI стек выбран и установлен — **ждём решения архитектора**
+- [ ] **(новое)** Smoke test через Bybit web → ордер виден в Bybit, отменяется
 - [x] Файл `sprint_0_report.md` создан со всеми разделами
+- [x] Research doc по OSS альтернативам создан: [`oss_trading_terminals.md`](../research/oss_trading_terminals.md)
 - [x] Git репо `mm-bot` создан на GitHub: https://github.com/anymasoft/mm-bot
-- [x] Initial commit запушен в `origin/main`
+- [x] Все коммиты запушены в `origin/main`
 
-**Sprint 0 закрыт частично** — инфраструктура полностью готова, открыты 3 интерактивных шага для пользователя (Bybit connect, Quantower install, smoke test).
+**Sprint 0 готов к закрытию** при принятии архитектором решения по OSS UI стеку. Инфраструктурная часть выполнена полностью, Bybit testnet работает с балансом, пивот Quantower → composite OSS UI задокументирован.
