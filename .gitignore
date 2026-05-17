@@ -141,3 +141,9 @@ NOTES_PRIVATE.md
 TODO_PRIVATE.md
 notes/
 private/
+
+# ============================================
+# Claude Code internal scratch
+# ============================================
+
+.claude/
