@@ -374,53 +374,63 @@ mm-bot/
 - [x] Research desktop OSS terminals выполнен и задокументирован
 - [x] Решение по UI стеку принято: форк Astras-Trading-UI + адаптация под Bybit
 - [x] Создан migration plan: [astras_bybit_migration_plan.md](../research/astras_bybit_migration_plan.md)
-- [ ] **(Sprint 1)** Форк Astras-Trading-UI создан под `anymasoft/astras-bybit-ui`
-- [ ] **(Sprint 1)** Bybit adapter prototype (минимальная WS/REST proxy)
-- [ ] **(Sprint 1)** Angular приложение запускается локально с Bybit adapter
-- [ ] **(Sprint 2+)** Desktop wrap через Tauri 2.0
+- [x] Все 6 архитектурных вопросов закрыты (см. секцию 7)
+- [x] Форк Astras-Trading-UI создан: [anymasoft/astras-bybit-ui](https://github.com/anymasoft/astras-bybit-ui) (Apache-2.0, default branch `master`)
+- [x] Новый репо для adapter создан: [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) (Apache-2.0, пустой, готов к Sprint 1)
+- [ ] **(Sprint 1)** Bybit adapter MVP (REST + WS для market data)
+- [ ] **(Sprint 2)** Astras frontend adaptation + первый live widget (tech-chart BTCUSDT)
+- [ ] **(Sprint 3)** Все trading widgets + manual orders на testnet
+- [ ] **(Sprint 4)** Tauri 2.0 desktop wrap + Node.js sidecar bundling
+- [ ] **(Sprint 5)** Hummingbot integration + первый запуск Avellaneda-Stoikov на `bybit_perpetual_testnet`
 
-**Sprint 0 закрыт** — инфраструктура полностью готова, UI-стек выбран, multi-sprint план миграции готов.
+**Sprint 0 закрыт** — инфраструктура готова, UI-стек выбран, два репозитория созданы, все архитектурные решения зафиксированы, готовы к старту Sprint 1.
 
 ---
 
-## 7. Открытые вопросы для архитектора
+## 7. Решения архитектора (зафиксировано 2026-05-17)
 
-### 7.1. Стратегия миграции Astras-Trading-UI
-- **Путь A (proxy backend)** vs **Путь B (модификация Angular services)** — рекомендую A
-- Хранить форк как часть `mm-bot` (sub-folder `astras-trading-ui/`) или отдельный репо `anymasoft/astras-bybit-ui`?
-- Какая **первая user-facing feature** должна работать в Sprint 1?
-  - Вариант 1: один scalper-order-book widget с live Bybit данными
-  - Вариант 2: tech-chart с live BTCUSDT свечами
-  - Вариант 3: blotter с позициями и балансом
-  - Вариант 4: всё перечисленное в одном dashboard'е
+Все шесть вопросов закрыты. Решения зафиксированы в [astras_bybit_migration_plan.md, секция 0](../research/astras_bybit_migration_plan.md#0-финальные-архитектурные-решения-одобрено-архитектором-2026-05-17).
 
-### 7.2. Hummingbot ↔ ASTRAS интеграция
-- ASTRAS UI и Hummingbot работают **параллельно**, оба через Bybit API (как изначально планировалось с Quantower)?
-- Или построить дополнительный канал: Hummingbot → внутренний API → ASTRAS UI (показывает state бота напрямую)?
+### 7.1. Стратегия миграции — RESOLVED
+- ✅ **Путь A — proxy backend (Node.js)**
+- ✅ Хранение — **отдельные репозитории**, не sub-folders:
+  - [anymasoft/astras-bybit-ui](https://github.com/anymasoft/astras-bybit-ui) — fork от alor-broker (default branch `master`)
+  - [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) — новый Node.js proxy (Apache-2.0)
+- ✅ **Первая user-facing feature: все четыре widget'а сразу** (chart + DOM + manual order placement + blotter), готовы к концу Sprint 3-4. Не пилим по одному — пользователь хочет полноценный dashboard как только Tauri-обёртка будет готова.
 
-### 7.3. Spot vs Perpetual
-- Сейчас подключён `bybit_testnet` (spot). Для PMM Dynamic Avellaneda-Stoikov классически нужен perpetual.
-- В Sprint 1 переключиться на `bybit_perpetual_testnet`?
-- Или сделать первый запуск на spot, чтобы быстрее увидеть результаты?
+### 7.2. Hummingbot ↔ Astras интеграция — RESOLVED
+- ✅ **Astras desktop разрабатывается первым (Sprint 1-4), стратегия запускается в Sprint 5.**
+- ✅ Без bridge solutions, без Bybit web UI как промежуточного шага — это противоречит требованию 100% OSS desktop.
+- ✅ В Sprint 5 — opциональный custom widget "Hummingbot Status" в Astras (через HTTP/IPC к Hummingbot Gateway или MQTT-bridge), если время позволит.
 
-### 7.4. Desktop wrap
-- Tauri 2.0 vs Electron для wrap Astras Angular приложения?
-- Tauri (Rust) — 10MB бинарь, быстрый, но Rust learning curve
-- Electron (Node) — 150-300MB бинарь, прожорливый, но огромная экосистема и быстрый старт
-- Рекомендую Tauri 2.0 для consistency с подходом "лучшие практики 2026"
+### 7.3. Spot vs Perpetual — RESOLVED
+- ✅ **Перейти на `bybit_perpetual_testnet` в Sprint 5** (одновременно с первым запуском стратегии).
+- ✅ Avellaneda-Stoikov классически требует perpetual для непрерывной торговли без T+ settlement.
+- ✅ Текущий `bybit_testnet` (spot) с $1270 балансом остаётся для smoke-тестов и валидации adapter'а в Sprint 1-3.
 
-### 7.5. Лицензирование нашего форка
-- Astras-Trading-UI Apache-2.0 → наш форк может остаться Apache-2.0 (просто) или поменять на GPL-3.0 (заставит downstream users open-source-нуть свои изменения)
-- Учитывая что это наш приватный торговый инструмент — Apache-2.0 + добавить NOTICE с атрибуцией ALOR
+### 7.4. Desktop wrap — RESOLVED
+- ✅ **Tauri 2.0 + Node.js sidecar** (а не Electron).
+- ✅ Обоснование: 5-15 MB бинарь vs 80-300 MB, 30-50 MB RAM vs 150-300 MB — критично т.к. на машине одновременно работают Hummingbot (4 GB в WSL2), IDE, Astras UI. Tauri 2.0 production-ready с октября 2024.
+- ✅ Bybit adapter (Node.js) упаковывается как `externalBin` sidecar внутрь Tauri-инсталлятора через Node SEA / nexe.
+- ✅ Bybit API keys хранятся в OS keystore через `tauri-plugin-stronghold`, передаются adapter'у через IPC на старте.
+- ✅ Полное обоснование trade-offs: [migration plan секция 3](../research/astras_bybit_migration_plan.md#почему-tauri-20-а-не-electron).
 
-### 7.6. Sprint 1 redefinition
-- Изначальный Sprint 1 = "запуск PMM Dynamic на BTCUSDT testnet"
-- Теперь требуется выбрать:
-  - **Вариант A**: Sprint 1 = запуск PMM Dynamic (стратегия), Sprint 2 = форк Astras и начало миграции — стратегия идёт впереди UI
-  - **Вариант B**: Sprint 1 = форк Astras + Bybit adapter MVP, Sprint 2 = PMM Dynamic — UI готовится первым
-  - **Вариант C**: параллельно — split sprints (отдельные ветки разработки)
+### 7.5. Лицензирование форка — RESOLVED
+- ✅ **Apache-2.0** для `astras-bybit-ui` (наследуется от upstream) + добавить `NOTICE` файл с атрибуцией ALOR.
+- ✅ **Apache-2.0** для `bybit-adapter` (новый код, выбран при создании репо).
+- ✅ Не меняем на GPL/AGPL — наш use case private trading tool, copyleft не нужен.
 
-Рекомендую **A** (стратегия первой): без живой стратегии UI не на чем тестировать; testnet через Bybit web достаточно для дебага стратегии.
+### 7.6. Sprint 1 redefinition — RESOLVED
+- ✅ **Sprint 1 = Bybit adapter MVP** (Node.js proxy, REST + WS для market data), 2-3 недели.
+- ✅ Стратегия НЕ идёт первой. Изначальная рекомендация "стратегия первой + дебажить через Bybit web" отклонена пользователем как противоречащая 100% OSS desktop требованию.
+- ✅ Полный 5-спринтовый roadmap: [migration plan секция 4](../research/astras_bybit_migration_plan.md#4-roadmap--5-спринтов-до-запуска-торговли):
+  - **Sprint 1** (нед 1-3): Bybit adapter MVP
+  - **Sprint 2** (нед 3-5): Astras frontend adaptation + первый live widget
+  - **Sprint 3** (нед 5-6): Все trading widgets + manual orders на testnet
+  - **Sprint 4** (нед 6-8): Tauri 2.0 wrap + Node sidecar bundling
+  - **Sprint 5** (нед 8+): Hummingbot integration + первый запуск Avellaneda-Stoikov на perpetual testnet
+
+**Timeline до первой торговли:** 6-8 недель (без бессмысленных bridge-шагов). Testnet $1270 ждёт. Mainnet — только после 2-3 недель валидации стратегии в testnet.
 
 ---
 

@@ -4,18 +4,32 @@
 
 ## Архитектура
 
-- **Engine:** Hummingbot 2.14.0 (работает в WSL2 Ubuntu, Python 3.13)
-- **UI:** форк [Astras-Trading-UI](https://github.com/alor-broker/Astras-Trading-UI) от ALOR (Apache-2.0, Angular 21), адаптированный под Bybit + desktop wrap через Tauri 2.0 — *в разработке, см. [docs/research/astras_bybit_migration_plan.md](docs/research/astras_bybit_migration_plan.md)*
-- **Биржа:** Bybit (Testnet → Mainnet после валидации стратегии)
+Распределённая по трём репозиториям:
+
+| Компонент | Репо | Стек | Статус |
+|---|---|---|---|
+| **Engine** (торговый бот) | [anymasoft/mm-bot](https://github.com/anymasoft/mm-bot) (этот) | Hummingbot 2.14.0, Python 3.13, WSL2 Ubuntu 24.04 | Установлен, готов к Sprint 5 |
+| **UI** (desktop terminal) | [anymasoft/astras-bybit-ui](https://github.com/anymasoft/astras-bybit-ui) | Angular 21 + ng-zorro + Tauri 2.0 (fork [alor-broker/Astras-Trading-UI](https://github.com/alor-broker/Astras-Trading-UI), Apache-2.0) | Fork создан, Sprint 2-4 |
+| **Backend adapter** | [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) | Node.js + TypeScript + Fastify + bybit-api, Apache-2.0 | Репо создан, Sprint 1 |
+
+- **Биржа:** Bybit (Testnet → Mainnet после 2-3 недель валидации стратегии)
+- **Стратегия:** PMM Dynamic / Avellaneda-Stoikov на perpetual futures
+- **Desktop wrap:** один `.msi` инсталлятор (Tauri 2.0 + Node sidecar)
 - **Принцип:** 100% open source. Никаких proprietary tools, trial-периодов или paid pro tiers.
+
+Подробный план миграции и архитектурные решения: [docs/research/astras_bybit_migration_plan.md](docs/research/astras_bybit_migration_plan.md).
 
 ## Статус проекта
 
-Текущая фаза: **Sprint 0** — установка инфраструктуры.
+**Sprint 0 закрыт** (2026-05-17): инфраструктура установлена, UI-стек выбран, два репозитория созданы, все 6 архитектурных вопросов закрыты.
+
+**Следующий шаг — Sprint 1:** Bybit adapter MVP в [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) (Node.js proxy с REST + WS endpoints в ALOR-формате).
+
+Timeline до первого запуска стратегии: 6-8 недель (5 спринтов). Полный roadmap — в [migration plan](docs/research/astras_bybit_migration_plan.md#4-roadmap--5-спринтов-до-запуска-торговли).
 
 См. [`docs/sprint_reports/`](docs/sprint_reports/) для детальных отчётов по каждому спринту.
 
-## Структура репозитория
+## Структура этого репозитория
 
 ```
 mm-bot/
@@ -25,21 +39,20 @@ mm-bot/
 │   └── research/          # Аналитические документы (UI стек, миграции)
 ├── strategies/             # YAML конфиги стратегий Hummingbot (без API keys)
 ├── screenshots/            # Скриншоты UI для архитектора
-├── scripts/                # Вспомогательные скрипты (Hummingbot wrappers и т.п.)
+├── scripts/                # Вспомогательные скрипты (Hummingbot wrappers)
 ├── USAGE.md                # Инструкция по ежедневному использованию
 └── README.md               # Этот файл
 ```
 
-Планируемые отдельные репозитории (Sprint 1+):
-- `anymasoft/astras-bybit-ui` — форк Astras-Trading-UI с Bybit адаптерами
-- `anymasoft/bybit-adapter` — Node.js proxy между Astras-UI и Bybit V5 API
+Frontend и backend-adapter живут в отдельных репозиториях (см. таблицу выше) — это решение архитектора для минимизации upstream-дивергенции от ALOR и независимой разработки adapter'а.
 
 ## Безопасность
 
 **API ключи никогда не коммитятся.** Все credentials хранятся:
 
-- Hummingbot: в `~/projects/hummingbot/conf/` внутри WSL (encrypted, исключён через .gitignore)
-- Quantower: в Windows keystore приложения
+- Hummingbot: в `~/projects/hummingbot/conf/` внутри WSL2 (encrypted, исключён через `.gitignore`)
+- Bybit adapter (dev): в env-файле `~/.bybit-adapter/.env` (gitignore)
+- Bybit adapter (production): в Windows Credential Manager через `tauri-plugin-stronghold`, передаются в sidecar через IPC на старте
 - Локальные `.env` файлы — в `.gitignore`
 
 ## Команды для работы
