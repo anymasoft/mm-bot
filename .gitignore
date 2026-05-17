@@ -147,3 +147,11 @@ private/
 # ============================================
 
 .claude/
+
+# ============================================
+# Sibling repos cloned into mm-bot/ for convenience
+# (live in own GitHub repos: anymasoft/bybit-adapter, anymasoft/astras-bybit-ui)
+# ============================================
+
+bybit-adapter/
+astras-bybit-ui/
