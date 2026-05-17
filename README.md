@@ -9,8 +9,8 @@
 | Компонент | Репо | Стек | Статус |
 |---|---|---|---|
 | **Engine** (торговый бот) | [anymasoft/mm-bot](https://github.com/anymasoft/mm-bot) (этот) | Hummingbot 2.14.0, Python 3.13, WSL2 Ubuntu 24.04 | Установлен, готов к Sprint 5 |
-| **UI** (desktop terminal) | [anymasoft/astras-bybit-ui](https://github.com/anymasoft/astras-bybit-ui) | Angular 21 + ng-zorro + Tauri 2.0 (fork [alor-broker/Astras-Trading-UI](https://github.com/alor-broker/Astras-Trading-UI), Apache-2.0) | Fork создан, Sprint 2-4 |
-| **Backend adapter** | [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) | Node.js + TypeScript + Fastify + bybit-api, Apache-2.0 | Репо создан, Sprint 1 |
+| **UI** (desktop terminal) | [anymasoft/astras-bybit-ui](https://github.com/anymasoft/astras-bybit-ui) | Angular 21 + ng-zorro + lightweight-charts (Apache-2.0) + technicalindicators (MIT). Tauri 2.0 wrap — Sprint 4. Форк [alor-broker/Astras-Trading-UI](https://github.com/alor-broker/Astras-Trading-UI), ветка `bybit-integration` | Sprint 3 закрыт |
+| **Backend adapter** | [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) | Node.js + TypeScript + Fastify + bybit-api, Apache-2.0 | Sprint 3 закрыт |
 
 - **Биржа:** Bybit (Testnet → Mainnet после 2-3 недель валидации стратегии)
 - **Стратегия:** PMM Dynamic / Avellaneda-Stoikov на perpetual futures
@@ -21,11 +21,20 @@
 
 ## Статус проекта
 
-**Sprint 0 закрыт** (2026-05-17): инфраструктура установлена, UI-стек выбран, два репозитория созданы, все 6 архитектурных вопросов закрыты.
+- **Sprint 0** (2026-05-17): инфраструктура, UI-стек, два репозитория.
+- **Sprint 1**: Bybit adapter MVP — REST + WS endpoints в ALOR-формате, размещение/отмена ордеров.
+- **Sprint 2**: стабилизация и визуальные правки. Чарт BTCUSDT с 5 индикаторами, default Crypto layout,
+  удаление proprietary TradingView Charting Library (1550 файлов, OSS audit pass).
+  Найдено и исправлено 3 критичных бага Sprint 1: TIMEFRAME_MAP в секундах, ticker delta merge,
+  lowercase order opcodes.
+- **Sprint 3** (текущий): Order Book stateful merge + throttling + REST seed
+  (мерцание устранено, depth 25+ уровней с каждой стороны), Equity Curve подключен,
+  Blotter с live данными (Стопы / Сделки / История сделок — реальный Bybit V5).
+- **Sprint 4** (план): Tauri 2.0 desktop wrap, Chart Trading Phase 1 (click-to-place
+  ордера прямо на графике через overlay поверх lightweight-charts), production-ready auth.
+- **Sprint 5**: Hummingbot integration (PMM Dynamic / Avellaneda-Stoikov).
 
-**Следующий шаг — Sprint 1:** Bybit adapter MVP в [anymasoft/bybit-adapter](https://github.com/anymasoft/bybit-adapter) (Node.js proxy с REST + WS endpoints в ALOR-формате).
-
-Timeline до первого запуска стратегии: 6-8 недель (5 спринтов). Полный roadmap — в [migration plan](docs/research/astras_bybit_migration_plan.md#4-roadmap--5-спринтов-до-запуска-торговли).
+Полный roadmap — в [migration plan](docs/research/astras_bybit_migration_plan.md#4-roadmap--5-спринтов-до-запуска-торговли).
 
 См. [`docs/sprint_reports/`](docs/sprint_reports/) для детальных отчётов по каждому спринту.
 
